@@ -1,0 +1,41 @@
+---
+title: "Data Source"
+author: "Avinash Barnwal"
+date: "9/8/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+text_tbl <- data.frame(
+Application = c("Beetle Extinction Risk", "Birth Weight Prediction", "Body Fat Mass",
+          "CAO/ARO/AIO-04 DFS","Childhood Malnutrition","Head Circumference",
+          "PRO-ACT ALSFRS","PRO-ACT OS"),
+Source = c("Seibold et al. (2015)","Schild et al. (2008)","Garcia et al. (2005)","Rödel et al.  (2015)","Fenske et al. (2011)","Fredriks et al. (2000)","Küffner et al. (2015)","Seibold et al. (2017)"),
+N      = c(1025,150,71,1153,24166,7040,1013,2711),
+Y      = c("Ordered (6)","Continuous","Continuous","Survival (71%)","Continuous","Continuous","Ordered (50)","Survival (69%)"),
+X      = c("(7,3)","(5, 0)","(9, 0)","(3, 15)","(6, 14)","(1, 0)","(43, 16)","(3, 16)"),
+F_z    = c("expit","Φ","Φ","","","","",""),
+Name_of_Folder = c("2015 - Seibold et al. - Beetle Extinction Risk","","2005 - Garcia et al. - Body Fat Mass","","2011 - Fenske et al. - Child Malnutritiion",""),
+Status = c("Available","Not Available","Available","Not Available","Available","Not Available")
+)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
