@@ -4,8 +4,6 @@ library(survival)
 library(penaltyLearning)
 library(Hmisc)
 library(caret)
-library(tbm)
-library(tram)
 
 data_import =function(dataname){
   filename = paste('https://raw.githubusercontent.com/avinashbarnwal/GSOC-2019/master/AFT/test/data/neuroblastoma-data-master/data/',dataname,'/',sep="")
@@ -83,54 +81,24 @@ inputs              = resDataMassage$inputs
 labels              = resDataMassage$labels
 fold_iter           = unique(folds$fold)
 accuracy_fold       = numeric(length(fold_iter))
-coef_model          = list()
 
 getaccuracy=function(pred,y_lower,y_higher){
     res = (pred>=y_lower & pred<=y_higher)
     return(res)
 }
 
-i = 1
-res                 = getXY(fold_iter[i],folds,inputs,labels)
-X                   = res$X
-X.val               = res$X.val
-y.lower             = res$y.lower
-y.lower.val         = res$y.lower.val
-y.upper             = res$y.upper
-y.upper.val         = res$y.upper.val
-train.folds         = cut(seq(1,nrow(X)),breaks=5,labels=FALSE)
-res                 = list()
-my.surv             = Surv(y.lower,y.upper,type='interval2')
-formula             = as.formula(paste("my.surv ~", paste(colnames(X),collapse="+")))
-trn.data            = data.frame(X,y.lower,y.upper)
-glm = glmboost(formula,data=trn.data,family=Lognormal(),control=boost_control(mstop=200,nu=0.001,trace=TRUE))
-plot(glm, off2int = TRUE)
-plot(glm, ylim = range(coef(glm)))
-coef_model[i]       = coef(glm)
-tst.data            = data.frame(X.val)
-pred.y.val          = predict(glm,tst.data,type="response")
-accuracy_fold[1]    = sum(mapply(getaccuracy,pred.y.val,y.lower.val,y.upper.val))/length(pred.y.val)
-
-### With STM - Mboost (Additive Smooth Models)
-trn.data$y.lower = trn.data$y.upper = NULL
-trn.data$my.surv = my.surv
-m_mlt = Survreg(formula, data = trn.data, dist = "lognormal")
-bm = stmboost(m_mlt, formula = formula, data = trn.data,control = boost_control(mstop=200,nu=0.001,trace=TRUE),method = quote(mboost::mboost))
-### look at in-sample performance
-logLik(m_mlt)
-plot(risk(bm)) ### this is the negative log-lik
-
-### With STM - Mboost (Regression Trees)
-trn.data$y.lower = trn.data$y.upper = NULL
-trn.data$my.surv = my.surv
-m_mlt            = Survreg(formula, data = trn.data, dist = "lognormal")
-bm               = stmboost(m_mlt, formula = formula, control = boost_control(mstop=2000,nu=0.001,trace=TRUE),data = trn.data,method = quote(mboost::blackboost))
-### look at in-sample performance
-logLik(m_mlt)
-plot(risk(bm)) ### this is the negative log-lik
-
-tst.data            = data.frame(X.val)
-tst.data$y.lower    = tst.data$y.upper = NULL
-pred.y.val          = predict(bm,newdata=tst.data)
-
-sessionInfo()
+for(i in 1:length(fold_iter)){
+    res                 = getXY(fold_iter[i],folds,inputs,labels)
+    X                   = res$X
+    X.val               = res$X.val
+    y.lower             = res$y.lower
+    y.lower.val         = res$y.lower.val
+    y.upper             = res$y.upper
+    y.upper.val         = res$y.upper.val
+    train.folds         = cut(seq(1,nrow(X)),breaks=5,labels=FALSE)
+    res                 = list()
+    target.mat          = cbind(y.lower,y.upper)
+    fit                 = IntervalRegressionCV(X, target.mat)  
+    pred                = predict(fit, X.val)
+    accuracy_fold[i]    = getaccuracy(pred,y.lower.val,y.upper.val)
+}
