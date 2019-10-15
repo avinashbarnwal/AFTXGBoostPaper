@@ -1,0 +1,280 @@
+
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> 
+> library(mboost)
+Loading required package: parallel
+Loading required package: stabs
+This is mboost 2.9-1. See ‘package?mboost’ and ‘news(package  = "mboost")’
+for a complete list of changes.
+
+> library(survival)
+> # library(penaltyLearning)
+> library(Hmisc)
+Loading required package: lattice
+Loading required package: Formula
+Loading required package: ggplot2
+
+Attaching package: ‘ggplot2’
+
+The following object is masked from ‘package:mboost’:
+
+    %+%
+
+
+Attaching package: ‘Hmisc’
+
+The following objects are masked from ‘package:base’:
+
+    format.pval, units
+
+> library(caret)
+
+Attaching package: ‘caret’
+
+The following object is masked from ‘package:survival’:
+
+    cluster
+
+> 
+> data_import =function(dataname){
++   filename = paste('https://raw.githubusercontent.com/avinashbarnwal/GSOC-2019/master/AFT/test/data/neuroblastoma-data-master/data/',dataname,'/',sep="")
++   inputFileName = paste(filename,'inputs.csv',sep="")
++   labelFileName = paste(filename,'outputs.csv',sep="")
++   foldsFileName = paste(filename,'cv/equal_labels/folds.csv',sep="")
++   inputs        = read.table(inputFileName,sep=",",header=T,stringsAsFactors = F,row.names=1)
++   labels        = read.table(labelFileName,sep=",",header=T,stringsAsFactors = F,row.names=1)
++   folds         = read.table(foldsFileName,sep=",",header=T,stringsAsFactors = F,row.names=1)
++   res           = list()
++   res$inputs    = inputs
++   res$labels    = labels
++   res$folds     = folds
++   return(res)
++ }
+> 
+> data_massage = function(inputs,labels){
++     rownamesInput = rownames(inputs)
++     inputs        = do.call(data.frame,lapply(inputs, function(x) replace(x, is.infinite(x),NA)))
++     naColumns     = colnames(inputs)[colSums(is.na(inputs))>0]
++     noVarCol      = getNonVarCols(inputs)
++     removeCols    = c(naColumns,noVarCol)
++     inputs        = inputs[ , !(colnames(inputs) %in% removeCols)]
++     rownames(inputs) = rownamesInput
++     labels$min.log.lambda = unlist(lapply(labels$min.log.lambda,exp))
++     labels$max.log.lambda = unlist(lapply(labels$max.log.lambda,exp))
++     res        = list()
++     res$inputs = inputs
++     res$labels = labels
++     return(res)
++ }
+> 
+> getXY<-function(foldNo,folds,inputs,labels){
++     test.id       = rownames(subset(folds,fold==foldNo))
++     train.id      = rownames(subset(folds,fold!=foldNo))
++     X             = subset(inputs,rownames(inputs) %in% train.id)
++     X             = as.matrix(X)
++     X.val         = subset(inputs,rownames(inputs) %in% test.id)
++     X.val         = as.matrix(X.val)
++     y.label       = subset(labels,rownames(labels) %in% train.id)
++     y.label.test  = subset(labels,rownames(labels) %in% test.id)
++     y.lower       = as.matrix(y.label$min.log.lambda)
++     y.upper       = as.matrix(y.label$max.log.lambda)
++     y.lower.val   = as.matrix(y.label.test$min.log.lambda)
++     y.upper.val   = as.matrix(y.label.test$max.log.lambda)
++     res           = list()
++     res$X         = X
++     res$X.val     = X.val
++     res$y.lower      = y.lower
++     res$y.lower.val  = y.lower.val
++     res$y.upper      = y.upper
++     res$y.upper.val  = y.upper.val
++     return(res)
++ }
+> 
+> getNonVarCols<-function(data){
++     var_columns    = apply(inputs,2,var)
++     resCol         = names(var_columns[var_columns==0.0])
++     return(resCol)
++ }
+> 
+> # Set Parameters
+> dataNameRange       = c('ATAC_JV_adipose','CTCF_TDH_ENCODE','H3K27ac-H3K4me3_TDHAM_BP','H3K27ac_TDH_some','H3K36me3_AM_immune')
+> sigma_range         = c(1,2,5,10,100)
+> distribution_range  = c('normal','logistic','extreme')
+> learning_rate       = 0.1
+> num_round           = 200
+> 
+> res                 = data_import(dataNameRange[1])
+> inputs              = res$inputs
+> labels              = res$labels
+> folds               = res$folds
+> resDataMassage      = data_massage(inputs,labels)
+> inputs              = resDataMassage$inputs
+> labels              = resDataMassage$labels
+> fold_iter           = unique(folds$fold)
+> accuracy_fold       = numeric(length(fold_iter))
+> coef_model          = list()
+> 
+> getaccuracy=function(pred,y_lower,y_higher){
++     res = (pred>=y_lower & pred<=y_higher)
++     return(res)
++ }
+> 
+> # for(i in 1:length(fold_iter)){
+> i <- 1
+>     res                 = getXY(fold_iter[i],folds,inputs,labels)
+>     X                   = res$X
+>     X.val               = res$X.val
+>     y.lower             = res$y.lower
+>     y.lower.val         = res$y.lower.val
+>     y.upper             = res$y.upper
+>     y.upper.val         = res$y.upper.val
+>     train.folds         = cut(seq(1,nrow(X)),breaks=5,labels=FALSE)
+>     res                 = list()
+>     my.surv             = Surv(y.lower,y.upper,type='interval2')
+>     formula             = as.formula(paste("my.surv ~", paste(colnames(X),collapse="+")))
+>     trn.data            = data.frame(X,y.lower,y.upper)
+>     glm = glmboost(formula,data=trn.data,family=Lognormal(),control=boost_control(mstop=200,nu=0.001,trace=TRUE))
+[   1] ...................................... -- risk: 8757635 
+[  41] ...................................... -- risk: 27689168 
+[  81] ...................................... -- risk: 42906038 
+[ 121] ...................................... -- risk: 48286129 
+[ 161] ......................................
+Final risk: 51486425 
+There were 50 or more warnings (use warnings() to see the first 50)
+>     plot(glm, off2int = TRUE)
+>     plot(glm, ylim = range(coef(glm)))
+>     coef_model[i]       = coef(glm)
+Warning message:
+In coef_model[i] = coef(glm) :
+  number of items to replace is not a multiple of replacement length
+>     tst.data            = data.frame(X.val)
+>     pred.y.val          = predict(glm,tst.data,type="response")
+>     accuracy_fold[i]    = sum(mapply(getaccuracy,pred.y.val,y.lower.val,y.upper.val))/length(pred.y.val)
+> # }
+> 
+> library("tbm")
+Loading required package: mlt
+Loading required package: basefun
+Loading required package: variables
+
+Attaching package: ‘variables’
+
+The following object is masked from ‘package:ggplot2’:
+
+    unit
+
+> library("tram")
+> trn.data$y.lower <- trn.data$y.upper <- NULL
+> trn.data$my.surv <- my.surv
+> m_mlt <- Survreg(my.surv ~ 1, data = trn.data, dist = "lognormal")
+> bm <- stmboost(m_mlt, formula = my.surv ~ ., data = trn.data,
++                method = quote(mboost::mboost))
+Warning message:
+In c.basis(bresponse = response, bshifting = shifting) :
+  more than one basis contains an intercept term
+> 
+> logLik(m_mlt)
+'log Lik.' -459.4352 (df=2)
+> risk(bm)
+  [1] 459.5825 454.7925 450.6285 447.0037 443.8442 441.0864 438.6762 436.5668
+  [9] 434.7181 433.0956 431.6695 430.4143 429.3076 428.3303 427.4658 426.6998
+ [17] 426.0197 425.2257 424.6235 423.9193 423.3845 422.1340 421.5390 421.0074
+ [25] 420.5311 420.1037 419.5446 419.1619 418.6630 418.2480 417.8057 417.4753
+ [33] 417.1760 416.7798 416.5085 416.1504 415.8417 415.5169 415.2775 414.9778
+ [41] 414.7581 414.5254 414.2486 414.0492 413.7917 413.5513 413.3659 413.1639
+ [49] 412.9394 412.7696 412.5582 412.3590 411.7807 411.5875 411.4090 411.2436
+ [57] 411.0578 410.9061 410.7883 410.6430 410.4780 410.3690 410.2315 410.1028
+ [65] 409.9981 409.8496 409.7269 409.6300 409.5116 409.4215 409.3072 409.1728
+ [73] 409.0889 408.9795 408.8761 408.7955 408.6952 408.6202 408.4962 408.3996
+ [81] 408.2401 408.1481 408.0762 407.9865 407.9196 407.8062 407.7194 407.5724
+ [89] 407.4893 407.4250 407.3437 407.2839 407.2044 407.1005 407.0247 406.9672
+ [97] 406.8928 406.7577 406.6859 406.6310 406.5604
+> 
+> ### set-up some quantiles
+> q <- seq(from = 0, to = max(trn.data$my.surv[,1]), length.out = 100)
+> ### compute conditional density
+> d <- predict(bm, newdata = trn.data[1:10,], type = "density", q = q)
+> ### NOTE: obs are in columns, not rows!
+> dim(d)
+[1] 100  10
+> ### plot density of first subject
+> plot(q, d[,1])
+> 
+> sessionInfo()
+R version 3.6.1 (2019-07-05)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 18.04.3 LTS
+
+Matrix products: default
+BLAS:   /usr/local/lib/R/lib/libRblas.so
+LAPACK: /usr/local/lib/R/lib/libRlapack.so
+
+locale:
+ [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+ [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
+ [7] LC_PAPER=de_CH.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] tram_0.3-0        tbm_0.3-1         mlt_1.1-0         basefun_1.0-6    
+ [5] variables_1.0-2   caret_6.0-84      Hmisc_4.2-0       ggplot2_3.2.1    
+ [9] Formula_1.2-3     lattice_0.20-38   survival_2.44-1.1 mboost_2.9-1     
+[13] stabs_0.6-3      
+
+loaded via a namespace (and not attached):
+ [1] splines_3.6.1       foreach_1.4.7       prodlim_2018.04.18 
+ [4] assertthat_0.2.1    stats4_3.6.1        latticeExtra_0.6-28
+ [7] ipred_0.9-9         numDeriv_2016.8-1.1 pillar_1.4.2       
+[10] backports_1.1.5     glue_1.3.1          quadprog_1.5-7     
+[13] alabama_2015.3-1    digest_0.6.21       RColorBrewer_1.1-2 
+[16] checkmate_1.9.4     recipes_0.1.7       colorspace_1.4-1   
+[19] sandwich_2.5-1      plyr_1.8.4          htmltools_0.4.0    
+[22] Matrix_1.2-17       timeDate_3043.102   pkgconfig_2.0.3    
+[25] purrr_0.3.2         mvtnorm_1.0-11      scales_1.0.0       
+[28] gower_0.2.1         lava_1.6.6          htmlTable_1.13.2   
+[31] tibble_2.1.3        generics_0.0.2      TH.data_1.0-10     
+[34] withr_2.1.2         nnet_7.3-12         lazyeval_0.2.2     
+[37] magrittr_1.5        crayon_1.3.4        nlme_3.1-140       
+[40] MASS_7.3-51.4       class_7.3-15        foreign_0.8-71     
+[43] tools_3.6.1         data.table_1.12.4   multcomp_1.4-10    
+[46] stringr_1.4.0       munsell_0.5.0       cluster_2.1.0      
+[49] orthopolynom_1.0-5  compiler_3.6.1      inum_1.0-1         
+[52] rlang_0.4.0         grid_3.6.1          nloptr_1.2.1       
+[55] iterators_1.0.12    coneproj_1.14       rstudioapi_0.10    
+[58] htmlwidgets_1.5     base64enc_0.1-3     partykit_1.2-5     
+[61] ModelMetrics_1.2.2  gtable_0.3.0        codetools_0.2-16   
+[64] BB_2014.10-1        reshape2_1.4.3      polynom_1.4-0      
+[67] R6_2.4.0            lubridate_1.7.4     gridExtra_2.3      
+[70] nnls_1.4            zoo_1.8-6           knitr_1.25         
+[73] dplyr_0.8.3         libcoin_1.0-5       stringi_1.4.3      
+[76] Rcpp_1.0.2          rpart_4.1-15        acepack_1.4.1      
+[79] tidyselect_0.2.5    xfun_0.10          
+> 
+> proc.time()
+   user  system elapsed 
+ 18.454   0.207  19.204 
