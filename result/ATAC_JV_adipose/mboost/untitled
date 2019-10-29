@@ -1,0 +1,99 @@
+
+nJobs      = len(jobInput["jobs"])
+nMachines  = len(jobInput["machines"])
+nLabours   = len(jobInput["labours"])
+
+jobMaterial              = [0]*nJobs
+estimatedDeliveryDate    = [0]*nJobs
+jobToMachines            = [0]*nJobs
+jobDuration              = [0]*nJobs
+jobCost                  = [0]*nJobs
+
+for i in range(nJobs):
+
+	nSubJobs         = len(jobInput["jobs"])
+	subjobToMachines = [0]*nSubJobs
+	subjobDurations  = [0]*nSubJobs
+	subjobCosts      = [0]*nSubJobs
+	subjobTravels    = [0]*nSubJobs
+
+	for j in range(nSubJobs):
+
+		nAlt                = len(jobInput["jobs"][i]["subJobs"][j])
+		altsubjobToMachines = []
+		altsubjobDurations  = []
+		altsubjobCosts      = []
+		altsubjobTravels    = []
+
+		for k in range(nAlt):
+
+			if jobInput["jobs"][i]["subJobs"][j]["jobMachineDTOs"][k]==False:
+				altsubjobToMachines.append(jobInput["jobs"][i]["subJobs"][j]["jobMachineDTOs"][k]["machineId"])
+				altsubjobDurations.append(jobInput["jobs"][i]["subJobs"][j]["jobMachineDTOs"][k]["duration"])
+				altsubjobCosts.append(jobInput["jobs"][i]["subJobs"][j]["jobMachineDTOs"][k]["cost"])
+				altsubjobTravels.append(jobInput["jobs"][i]["subJobs"][j]["jobMachineDTOs"][k]["travel"])
+			
+		subjobToMachines[j] = altsubjobToMachines
+		subjobDurations[j]  = altsubjobDurations
+		subjobCosts[j]      = altsubjobCosts
+		subjobTravels[j]    = altsubjobTravels
+	
+	jobMaterial[i] = subjobMaterial;
+	estimatedDeliveryDate[i] = subjobEstimatedDeliveryDate;
+	jobToMachines[i] = subjobToMachines;
+	jobDuration[i] = subjobDurations;
+	machineCost[i] = subjobCosts;
+
+// All the things for Machines
+for(int i = 0;i<nMachines;++i){
+	int nDownTimes = jobRequest.getMachines().get(i).getDownTimes().size();
+	int nWeekendTimes  = jobRequest.getMachines().get(i).getWeekends().size();
+	int[][] tempmachineBlockTimes = new int[nDownTimes][];
+	int[][] tempWeekendTimes = new int[nWeekendTimes][];
+	for(int j = 0;j<nDownTimes;++j){
+		int[] tempmachineBlockTime = new int[2];
+		tempmachineBlockTime[0] = Integer.parseInt(jobRequest.getMachines().get(i).getDownTimes().get(j).getStart().toString());
+		tempmachineBlockTime[1] = Integer.parseInt(jobRequest.getMachines().get(i).getDownTimes().get(j).getEnd().toString());
+		tempmachineBlockTimes[j] = tempmachineBlockTime;
+	}
+	for(int j = 0;j<nWeekendTimes;++j){
+		int[] tempWeekendTime = new int[2];
+		tempWeekendTime[0] = Integer.parseInt(jobRequest.getMachines().get(i).getDownTimes().get(j).getStart().toString());
+		tempWeekendTime[1] = Integer.parseInt(jobRequest.getMachines().get(i).getDownTimes().get(j).getEnd().toString());
+		tempWeekendTimes[j] = tempWeekendTime;
+	}
+	machineBlockTime[i]    = tempmachineBlockTimes;
+	weekendTimes[i]        = tempWeekendTimes;
+	machineDownMaterial[i] = Integer.parseInt(jobRequest.getMachines().get(i).getMaterialdowntime().toString());
+}
+		// All the things for Labours
+		for(int i = 0;i<nLabours;++i) {
+			labourToMachines[i] = Integer.parseInt(jobRequest.getLabours().get(i).getLabourToMachines().toString());
+			int nLans = jobRequest.getLabours().get(i).getLaborNonAvailability().size();
+			int[][] templans = new int[nLans][];
+			for (int j = 0; j < nLans; ++j) {
+				int[] templan = new int[2];
+				templan[0] = Integer.parseInt(
+						jobRequest.getLabours().get(i).getLaborNonAvailability().get(j).getStart().toString());
+				templan[1] = Integer.parseInt(
+						jobRequest.getLabours().get(i).getLaborNonAvailability().get(j).getEnd().toString());
+				templans[j] = templan;
+			}
+			labourNonAvailability[i] = templans;
+		}
+
+		jobBasicInput.setOptimType(optimType);
+		jobBasicInput.setEstimatedDeliveryDate(estimatedDeliveryDate);
+		jobBasicInput.setJobToMachines(jobToMachines);
+		jobBasicInput.setJobDuration(jobDuration);
+		jobBasicInput.setJobMaterial(jobMaterial);
+		jobBasicInput.setMachineBlockTime(machineBlockTime);
+		jobBasicInput.setWeekendTimes(weekendTimes);
+		jobBasicInput.setMachineCost(machineCost);
+		jobBasicInput.setLabourNonAvailability(labourNonAvailability);
+		jobBasicInput.setLabourToMachines(labourToMachines);
+		jobBasicInput.setMachineDownMaterial(machineDownMaterial);
+		return jobBasicInput;
+	}
+}
+
