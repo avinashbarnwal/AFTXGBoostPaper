@@ -1,0 +1,1 @@
+{"eta": 0.6010000000000001, "max_depth": 2.0, "min_child_weight": 0.1, "reg_alpha": 0.00010154335828877903, "reg_lambda": 0.005486312523811925, "sigma": 1, "distribution": "normal", "num_round": 26, "min_val_error": 1.812688}

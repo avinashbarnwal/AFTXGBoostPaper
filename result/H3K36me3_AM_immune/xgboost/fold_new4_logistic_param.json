@@ -1,0 +1,1 @@
+{"eta": 0.901, "max_depth": 2.0, "min_child_weight": 0.1, "reg_alpha": 0.0010665943033542247, "reg_lambda": 13.001078156846061, "sigma": 1, "distribution": "logistic", "num_round": 111, "min_val_error": 2.123748}
