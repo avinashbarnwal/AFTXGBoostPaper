@@ -1,0 +1,31 @@
+/usr/lib/python3/dist-packages/urllib3/connectionpool.py:860: InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning)
+/usr/lib/python3/dist-packages/urllib3/connectionpool.py:860: InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning)
+/usr/lib/python3/dist-packages/urllib3/connectionpool.py:860: InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning)
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/pandas/io/parsers.py", line 2059, in read
+    data = self._reader.read(nrows)
+  File "pandas/_libs/parsers.pyx", line 881, in pandas._libs.parsers.TextReader.read
+  File "pandas/_libs/parsers.pyx", line 921, in pandas._libs.parsers.TextReader._read_low_memory
+StopIteration
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "xgboost_hyper_Py_1.py", line 192, in <module>
+    data      = data_import(data_name_domain[1])
+  File "xgboost_hyper_Py_1.py", line 30, in data_import
+    inputs        = pd.read_csv(StringIO(input1.text),index_col='sequenceID')
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/pandas/io/parsers.py", line 685, in parser_f
+    return _read(filepath_or_buffer, kwds)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/pandas/io/parsers.py", line 463, in _read
+    data = parser.read(nrows)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/pandas/io/parsers.py", line 1154, in read
+    ret = self._engine.read(nrows)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/pandas/io/parsers.py", line 2068, in read
+    dtype=self.kwds.get("dtype"),
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/pandas/io/parsers.py", line 3501, in _get_empty_meta
+    columns.pop(n - i)
+TypeError: unsupported operand type(s) for -: 'str' and 'int'

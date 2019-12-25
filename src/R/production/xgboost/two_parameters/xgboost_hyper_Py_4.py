@@ -179,7 +179,7 @@ def best_iter(eta,max_depth,min_child_weight,reg_alpha,reg_lambda,sigma,distribu
 # In[2]:
 
 
-data_name_domain = ['ATAC_JV_adipose','CTCF_TDH_ENCODE','H3K27ac-H3K4me3_TDHAM_BP','H3K27ac_TDH_some','H3K36me3_AM_immune']
+data_name_domain = ['ATAC_JV_adipose','CTCF_TDH_ENCODE','H3K27ac-H3K4me3_TDHAM_BP','H3K27ac_TDH_some','H3K36me3_AM_immune','H3K27me3_RL_cancer','H3K27me3_TDH_some','H3K36me3_TDH_ENCODE','H3K36me3_TDH_immune','H3K36me3_TDH_other']
 
 
 # In[5]:
