@@ -19,7 +19,7 @@ import functools
 
 
 def data_import(data_name):
-    filename = 'https://raw.githubusercontent.com/avinashbarnwal/GSOC-2019/master/AFT/test/data/neuroblastoma-data-master/data/'+data_name+'/'
+    filename = '../../../../../data/'+data_name+'/'
     inputFileName = filename+'inputs.csv'
     labelFileName = filename+'outputs.csv'
     foldsFileName = filename+'cv/equal_labels/folds.csv'
@@ -31,7 +31,6 @@ def data_import(data_name):
     res['labels'] = labels
     res['folds']  = folds
     return(res)
-
 
 # In[3]:
 

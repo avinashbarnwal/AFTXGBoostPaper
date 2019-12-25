@@ -13,26 +13,18 @@ import time
 import json
 from optuna.samplers import TPESampler
 import functools
-import requests
-from io import StringIO
 
 # In[2]:
 
 
 def data_import(data_name):
-    filename = 'https://raw.githubusercontent.com/avinashbarnwal/GSOC-2019/master/AFT/test/data/neuroblastoma-data-master/data/'+data_name+'/'
+    filename = '../../../../../data/'+data_name+'/'
     inputFileName = filename+'inputs.csv'
     labelFileName = filename+'outputs.csv'
     foldsFileName = filename+'cv/equal_labels/folds.csv'
-    input1 = requests.get(inputFileName, verify=False)
-    input2 = requests.get(labelFileName, verify=False)
-    input3 = requests.get(foldsFileName, verify=False)
-    inputs        = pd.read_csv(StringIO(input1.text))
-    inputs.set_index('sequenceID')
-    labels        = pd.read_csv(StringIO(input2.text))
-    labels.set_index('sequenceID')
-    folds         = pd.read_csv(StringIO(input3.text))
-    folds.set_index('sequenceID')
+    inputs        = pd.read_csv(inputFileName,index_col='sequenceID')
+    labels        = pd.read_csv(labelFileName,index_col='sequenceID')
+    folds         = pd.read_csv(foldsFileName,index_col='sequenceID')
     res           = {}
     res['inputs'] = inputs
     res['labels'] = labels
