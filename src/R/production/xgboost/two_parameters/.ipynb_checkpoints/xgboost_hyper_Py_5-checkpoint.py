@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 import xgboost as xgb
@@ -11,11 +11,11 @@ from   sklearn.model_selection import KFold
 import optuna
 import time
 import json
-from   optuna.samplers import TPESampler
+from optuna.samplers import TPESampler
 import functools
 
 
-# In[12]:
+# In[2]:
 
 
 def data_import(data_name):
@@ -33,7 +33,7 @@ def data_import(data_name):
     return(res)
 
 
-# In[4]:
+# In[3]:
 
 
 def data_massage(inputs,labels):
@@ -49,7 +49,7 @@ def data_massage(inputs,labels):
     return inputs,labels
 
 
-# In[5]:
+# In[4]:
 
 
 def getXY(foldNo,folds,inputs,labels):
@@ -73,7 +73,7 @@ def getXY(foldNo,folds,inputs,labels):
     return res
 
 
-# In[6]:
+# In[5]:
 
 
 def trainModel(X,X_val,y_lower,y_upper,y_lower_val,y_upper_val,params,num_round,distributionCol):
@@ -92,26 +92,33 @@ def trainModel(X,X_val,y_lower,y_upper,y_lower_val,y_upper_val,params,num_round,
     return(min_val_error)
 
 
-# In[7]:
+# In[6]:
 
 
 def objective(distribution,trial):
+    
     SEED         = 1
     Kfolds       = KFold(n_splits=5,shuffle=True,random_state=SEED)
     num_round    = 5000
     res          = 0
-    # Discrete-uniform parameter
+    
     eta              = trial.suggest_discrete_uniform('eta',0.001,1.001,0.1)
     max_depth        = trial.suggest_discrete_uniform('max_depth',2, 10,2)
-    min_child_weight = trial.suggest_discrete_uniform('min_child_weight',0.1,100.1,10)
-    reg_alpha        = trial.suggest_loguniform('reg_alpha',0.0001,100)
-    reg_lambda       = trial.suggest_loguniform('reg_lambda',0.0001,100)
-#     sigma            = trial.suggest_discrete_uniform('sigma',1,100,1)
-#     distribution     = trial.suggest_categorical('distribution',['normal','logistic','extreme'])
-    if distribution=='extreme':
-        sigma            = 10
-    else:
-        sigma            = 1
+    
+#     min_child_weight = trial.suggest_discrete_uniform('min_child_weight',0.1,100.1,10)
+#     reg_alpha        = trial.suggest_loguniform('reg_alpha',0.0001,100)
+#     reg_lambda       = trial.suggest_loguniform('reg_lambda',0.0001,100)
+
+    min_child_weight = 0.1
+    reg_alpha        = 0.005
+    reg_lambda       = 0.5
+    
+    if distribution =='normal':
+        sigma  = 10
+    elif distribution == 'logistic':
+        sigma  = 1
+    elif distribution == 'extreme':
+        sigma  = 10
         
     
     distribution_sigma = distribution+ ',' + str(sigma)
@@ -140,7 +147,7 @@ def objective(distribution,trial):
     return res
 
 
-# In[8]:
+# In[7]:
 
 
 def best_iter(eta,max_depth,min_child_weight,reg_alpha,reg_lambda,sigma,distribution): 
@@ -180,20 +187,20 @@ def best_iter(eta,max_depth,min_child_weight,reg_alpha,reg_lambda,sigma,distribu
     return res
 
 
-# In[13]:
+# In[8]:
 
 
 data_name_domain = ['ATAC_JV_adipose','CTCF_TDH_ENCODE','H3K27ac-H3K4me3_TDHAM_BP','H3K27ac_TDH_some','H3K36me3_AM_immune','H3K27me3_RL_cancer','H3K27me3_TDH_some','H3K36me3_TDH_ENCODE','H3K36me3_TDH_immune','H3K36me3_TDH_other']
 
 
-# In[14]:
+# In[9]:
 
 
 data      = data_import(data_name_domain[5])
 data_name = data_name_domain[5]
 
 
-# In[15]:
+# In[10]:
 
 
 inputs = data['inputs']
@@ -201,13 +208,13 @@ labels = data['labels']
 folds  = data['folds']
 
 
-# In[16]:
+# In[11]:
 
 
 inputs,labels = data_massage(inputs,labels)
 
 
-# In[17]:
+# In[12]:
 
 
 global X
@@ -217,7 +224,7 @@ global y_upper
 global y_upper_val
 
 
-# In[18]:
+# In[13]:
 
 
 run_time = {}
@@ -233,7 +240,7 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 
 for fold in np.unique(folds['fold'].values):
-
+    
     start        = time.time()
     res          = getXY(fold,folds,inputs,labels)
     X            = res['X']        
@@ -244,38 +251,36 @@ for fold in np.unique(folds['fold'].values):
     y_upper_val  = res['y_upper_val']
     
     for distribution in ['normal','logistic','extreme']:
-        
         print(fold,distribution)
         sampler = TPESampler(seed=1)  # Make the sampler behave in a deterministic way.
         study = optuna.create_study(sampler=sampler)
         study.optimize(functools.partial(objective,distribution), n_trials=100)
         trial         = study.best_trial
-        json_filename = "../../../../result/"+data_name+"/xgboost/fold"+str(fold)+'_'+distribution+'_param.json'
+        json_filename = "../../../../../result/"+data_name+"/xgboost/fold"+str(fold)+'_'+distribution+'_param_2.json'
         with open(json_filename, "w") as write_file:
             json.dump(trial.params, write_file)
-            
     end            = time.time()
     time_taken     = end - start
     run_time[fold] = time_taken
 
 
-# In[18]:
+# In[20]:
 
 
-run_time1 = {}
+run_time1 ={}
 for key in run_time.keys():
     run_time1[str(key)] = run_time[key]
 
 
-# In[26]:
+# In[21]:
 
 
-json_filename = "../../../../result/"+data_name+"/xgboost/run_time_tuning1.json"
+json_filename = "../../../../../result/"+data_name+"/xgboost/run_time_2_param_tuning1.json"
 with open(json_filename, "w") as write_file:
     json.dump(run_time1, write_file)
 
 
-# In[21]:
+# In[22]:
 
 
 def trainModelIter(X,X_val,y_lower,y_upper,y_lower_val,y_upper_val,params,num_round,distributionCol):
@@ -295,13 +300,13 @@ def trainModelIter(X,X_val,y_lower,y_upper,y_lower_val,y_upper_val,params,num_ro
     return(val_error)
 
 
-# In[19]:
+# In[23]:
 
 
 run_time2 = {}
 
 
-# In[22]:
+# In[25]:
 
 
 #for fold in range(2,3):
@@ -316,20 +321,15 @@ for fold in np.unique(folds['fold'].values):
     y_upper_val  = res['y_upper_val']
     
     for distribution in ['normal','logistic','extreme']:
-        json_filename = "../../../../result/"+data_name+"/xgboost/fold"+str(fold)+'_'+distribution+'_param.json'
+        json_filename = "../../../../../result/"+data_name+"/xgboost/fold"+str(fold)+'_'+distribution+'_param_2.json'
         with open(json_filename, errors='ignore') as json_data:
             json_fold = json.load(json_data, strict=False)
         eta = json_fold['eta']
         max_depth = json_fold['max_depth']
-        min_child_weight = json_fold['min_child_weight']
-        reg_alpha = json_fold['reg_alpha']
-        reg_lambda = json_fold['reg_lambda']
-        
-        if distribution in ['normal','extreme']:
-            sigma = 10
-        else:
-            sigma = 1
-            
+        min_child_weight = 0.1
+        reg_alpha        = 0.005
+        reg_lambda       = 0.5
+        sigma= 1
         res      = best_iter(eta,max_depth,min_child_weight,reg_alpha,reg_lambda,sigma,distribution)
         new_json = {}
         new_json['eta'] = eta
@@ -343,7 +343,7 @@ for fold in np.unique(folds['fold'].values):
         if res['min_val_error'] == float('inf'):
             res['min_val_error'] = 10**8
         new_json['min_val_error'] = res['min_val_error']
-        json_filename = "../../../../result/"+data_name+"/xgboost/fold_new"+str(fold)+'_'+distribution+'_param.json'
+        json_filename = "../../../../../result/"+data_name+"/xgboost/fold_new"+str(fold)+'_'+distribution+'_param_2.json'
         with open(json_filename, "w") as write_file:
              json.dump(new_json, write_file)
     end_time        = time.time()
@@ -353,14 +353,14 @@ for fold in np.unique(folds['fold'].values):
 
 # ### Choosing best hyperparameter
 
-# In[23]:
+# In[80]:
 
 
 #for fold in range(2,3):
 for fold in np.unique(folds['fold'].values):
     fold_data = pd.DataFrame()
     for distribution in ['normal','logistic','extreme']:
-        json_filename = "../../../../result/"+data_name+"/xgboost/fold_new"+str(fold)+'_'+distribution+'_param.json'
+        json_filename = "../../../../../result/"+data_name+"/xgboost/fold_new"+str(fold)+'_'+distribution+'_param_2.json'
         with open(json_filename, errors='ignore') as json_data:
             json_fold = json.load(json_data, strict=False)
         dist_data = pd.DataFrame.from_dict(json_fold,orient='index',columns=[distribution])
@@ -369,13 +369,13 @@ for fold in np.unique(folds['fold'].values):
     fold_data['min_val_error'] = fold_data['min_val_error'].astype('float')
     best_dis   = fold_data['min_val_error'].idxmin()
     best_param = fold_data.loc[best_dis]
-    json_filename = "../../../../result/"+data_name+"/xgboost/fold_new"+str(fold)+'_dis'+'_param.json'
+    json_filename = "../../../../../result/"+data_name+"/xgboost/fold_new"+str(fold)+'_dis'+'_param_2.json'
     best_param = best_param.to_dict()
     with open(json_filename, "w") as write_file:
         json.dump(best_param, write_file)
 
 
-# In[24]:
+# In[26]:
 
 
 run_time3 ={}
@@ -383,16 +383,10 @@ for key in run_time2.keys():
     run_time3[str(key)] = run_time2[key]
 
 
-# In[25]:
+# In[27]:
 
 
-json_filename = "../../../../result/"+data_name+"/xgboost/run_time_tuning2.json"
+json_filename = "../../../../../result/"+data_name+"/xgboost/run_time_2_param_tuning2.json"
 with open(json_filename, "w") as write_file:
     json.dump(run_time3, write_file)
-
-
-# In[ ]:
-
-
-|
 

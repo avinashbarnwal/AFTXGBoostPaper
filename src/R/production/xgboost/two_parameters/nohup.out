@@ -1,0 +1,97 @@
+Traceback (most recent call last):
+  File "xgboost_hyper_Py_1.py", line 7, in <module>
+    import xgboost as xgb
+ModuleNotFoundError: No module named 'xgboost'
+1 normal
+1 logistic
+[W 2019-12-26 00:05:20,772] Setting status of trial#6 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:05:54,671] Setting status of trial#15 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:06:08,692] Setting status of trial#19 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:08:13,180] Setting status of trial#62 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:08:16,918] Setting status of trial#63 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:08:24,445] Setting status of trial#65 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:10:05,814] Setting status of trial#98 as TrialState.FAIL because the objective function returned nan.
+1 extreme
+2 normal
+2 logistic
+2 extreme
+3 normal
+3 logistic
+[W 2019-12-26 00:39:49,539] Setting status of trial#2 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:39:54,784] Setting status of trial#3 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:40:06,927] Setting status of trial#6 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:40:22,719] Setting status of trial#9 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:41:08,984] Setting status of trial#20 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:41:15,423] Setting status of trial#21 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:41:21,929] Setting status of trial#22 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:42:24,206] Setting status of trial#38 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:43:26,550] Setting status of trial#56 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:43:34,256] Setting status of trial#57 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:43:53,748] Setting status of trial#60 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:43:58,885] Setting status of trial#61 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:44:10,793] Setting status of trial#63 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:45:35,443] Setting status of trial#88 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:45:41,936] Setting status of trial#89 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:45:54,143] Setting status of trial#92 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:46:12,295] Setting status of trial#95 as TrialState.FAIL because the objective function returned nan.
+3 extreme
+4 normal
+4 logistic
+[W 2019-12-26 00:59:15,422] Setting status of trial#15 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:59:28,763] Setting status of trial#19 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:59:32,569] Setting status of trial#20 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 00:59:36,363] Setting status of trial#21 as TrialState.FAIL because the objective function returned nan.
+[W 2019-12-26 01:01:05,453] Setting status of trial#50 as TrialState.FAIL because the objective function returned nan.
+4 extreme
+Traceback (most recent call last):
+  File "xgboost_hyper_Py_1.py", line 364, in <module>
+    with open(json_filename, errors='ignore') as json_data:
+FileNotFoundError: [Errno 2] No such file or directory: '../../../../result/CTCF_TDH_ENCODE/xgboost/fold_new1_normal_param_2.json'
+1 normal
+1 logistic
+1 extreme
+Traceback (most recent call last):
+  File "xgboost_hyper_Py_2.py", line 254, in <module>
+    study.optimize(functools.partial(objective,distribution), n_trials=100)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/optuna/study.py", line 261, in optimize
+    gc_after_trial)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/optuna/study.py", line 443, in _optimize_sequential
+    self._run_trial_and_callbacks(func, catch, callbacks, gc_after_trial)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/optuna/study.py", line 520, in _run_trial_and_callbacks
+    trial = self._run_trial(func, catch, gc_after_trial)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/optuna/study.py", line 539, in _run_trial
+    result = func(trial)
+  File "xgboost_hyper_Py_2.py", line 143, in objective
+    res = res + trainModel(tr_x,vl_x,tr_y_lower,tr_y_upper,vl_y_lower,vl_y_upper,params,num_round,distribution_sigma)
+  File "xgboost_hyper_Py_2.py", line 90, in trainModel
+    bst    = xgb.train(params,dtrain,num_boost_round=num_round,evals=[(dtrain,"train"),(dtest,"test")],evals_result=res,verbose_eval=False)
+  File "/home/ubuntu/xgboost/python-package/xgboost/training.py", line 219, in train
+    xgb_model=xgb_model, callbacks=callbacks)
+  File "/home/ubuntu/xgboost/python-package/xgboost/training.py", line 74, in _train_internal
+    bst.update(dtrain, i, obj)
+  File "/home/ubuntu/xgboost/python-package/xgboost/core.py", line 1182, in update
+    dtrain.handle))
+KeyboardInterrupt
+1 normal
+Traceback (most recent call last):
+  File "xgboost_hyper_Py_2.py", line 254, in <module>
+    study.optimize(functools.partial(objective,distribution), n_trials=100)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/optuna/study.py", line 261, in optimize
+    gc_after_trial)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/optuna/study.py", line 443, in _optimize_sequential
+    self._run_trial_and_callbacks(func, catch, callbacks, gc_after_trial)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/optuna/study.py", line 520, in _run_trial_and_callbacks
+    trial = self._run_trial(func, catch, gc_after_trial)
+  File "/home/ubuntu/.local/lib/python3.6/site-packages/optuna/study.py", line 539, in _run_trial
+    result = func(trial)
+  File "xgboost_hyper_Py_2.py", line 143, in objective
+    res = res + trainModel(tr_x,vl_x,tr_y_lower,tr_y_upper,vl_y_lower,vl_y_upper,params,num_round,distribution_sigma)
+  File "xgboost_hyper_Py_2.py", line 90, in trainModel
+    bst    = xgb.train(params,dtrain,num_boost_round=num_round,evals=[(dtrain,"train"),(dtest,"test")],evals_result=res,verbose_eval=False)
+  File "/home/ubuntu/xgboost/python-package/xgboost/training.py", line 219, in train
+    xgb_model=xgb_model, callbacks=callbacks)
+  File "/home/ubuntu/xgboost/python-package/xgboost/training.py", line 74, in _train_internal
+    bst.update(dtrain, i, obj)
+  File "/home/ubuntu/xgboost/python-package/xgboost/core.py", line 1182, in update
+    dtrain.handle))
+KeyboardInterrupt

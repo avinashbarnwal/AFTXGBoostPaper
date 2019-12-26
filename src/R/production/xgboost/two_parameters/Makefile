@@ -1,5 +1,4 @@
 all:
-	nohup python3 xgboost_hyper_Py_1.py
 	nohup python3 xgboost_hyper_Py_2.py
 	nohup python3 xgboost_hyper_Py_3.py
 	nohup python3 xgboost_hyper_Py_4.py

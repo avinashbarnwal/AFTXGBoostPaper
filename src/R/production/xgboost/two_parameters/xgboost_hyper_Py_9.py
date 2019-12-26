@@ -359,7 +359,7 @@ for fold in np.unique(folds['fold'].values):
 for fold in np.unique(folds['fold'].values):
     fold_data = pd.DataFrame()
     for distribution in ['normal','logistic','extreme']:
-        json_filename = "../../../../result/"+data_name+"/xgboost/fold_new"+str(fold)+'_'+distribution+'_param_2.json'
+        json_filename = "../../../../../result/"+data_name+"/xgboost/fold_new"+str(fold)+'_'+distribution+'_param_2.json'
         with open(json_filename, errors='ignore') as json_data:
             json_fold = json.load(json_data, strict=False)
         dist_data = pd.DataFrame.from_dict(json_fold,orient='index',columns=[distribution])
@@ -368,7 +368,7 @@ for fold in np.unique(folds['fold'].values):
     fold_data['min_val_error'] = fold_data['min_val_error'].astype('float')
     best_dis   = fold_data['min_val_error'].idxmin()
     best_param = fold_data.loc[best_dis]
-    json_filename = "../../../../result/"+data_name+"/xgboost/fold_new"+str(fold)+'_dis'+'_param_2.json'
+    json_filename = "../../../../../result/"+data_name+"/xgboost/fold_new"+str(fold)+'_dis'+'_param_2.json'
     best_param = best_param.to_dict()
     with open(json_filename, "w") as write_file:
         json.dump(best_param, write_file)
