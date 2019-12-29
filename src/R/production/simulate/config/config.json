@@ -1,0 +1,13 @@
+{
+  "sim_data_1.csv": {
+    "n": [5000],
+    "d": [100],
+    "dist": ["weibull"],
+    "model": [1],
+    "shape": [2],
+    "scale": [2],
+    "inspections": [2],
+    "inspectLength": [2.5],
+    "seed": [1]
+  }
+}
