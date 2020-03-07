@@ -1,66 +1,24 @@
-2366.225353002548
-19080.977479696274
-42636.89622402191
-29982.818984270096
-52647.165054798126
-82710.42968463898
-26663.67880821228
-46586.36702251434
-72553.40046739578
-16538.314556121826
-29383.57190132141
-46093.017810583115
-210.1021957397461
-460.5583801269531
-647.9871830940247
-213.91895294189453
-465.1014325618744
-653.0586440563202
-183.11264324188232
-392.92669558525085
-555.8421041965485
-234.99353623390198
-493.1416575908661
-683.1148779392242
-638.8654854297638
-1259.4579634666443
-1945.3721735477448
-624.9966294765472
-1200.2061977386475
-1846.6836550235748
-619.8019852638245
-1201.165732383728
-1843.8287801742554
-587.2155849933624
-1105.9182631969452
-1659.4870293140411
+180.10383868217468
+368.7767713069916
+507.01678490638733
+208.01616644859314
+424.4951550960541
+588.8121190071106
 Traceback (most recent call last):
-  File "xgboost_hyper_Py_5.py", line 7, in <module>
-    import xgboost as xgb
-ModuleNotFoundError: No module named 'xgboost'
-251.6892957687378
-615.5270998477936
-881.3665008544922
-258.3130397796631
-626.9320828914642
-900.9896578788757
-208.29252099990845
-515.8845040798187
-744.9891490936279
-288.4248490333557
-3979.2972209453583
-7053.82612323761
-python3: can't open file 'xgboost_hyper_Py_5': [Errno 2] No such file or directory
-python3: can't open file 'xgboost_hyper_Py_5': [Errno 2] No such file or directory
-248.86922883987427
-609.2219665050507
-871.2989935874939
-255.3030846118927
-626.9744446277618
-897.9056558609009
-205.197252035141
-510.4126329421997
-736.0289549827576
-285.37458992004395
-688.3052794933319
-992.8736174106598
+  File "xgboost_hyper_Py_7.py", line 395, in <module>
+    run_time = get_best_parameters(data_name,sigmas)
+  File "xgboost_hyper_Py_7.py", line 280, in get_best_parameters
+    etas,max_depths,error_results = grid_search_cv(X, y_lower, y_upper, distribution,sigma)
+  File "xgboost_hyper_Py_7.py", line 182, in grid_search_cv
+    error_result = grid_search_cv_step(X, y_lower, y_upper, Kfolds, params, num_round, distribution_sigma)
+  File "xgboost_hyper_Py_7.py", line 120, in grid_search_cv_step
+    res = res + trainModel(tr_x,vl_x,tr_y_lower,tr_y_upper,vl_y_lower,vl_y_upper,params,num_round,distribution_sigma)
+  File "xgboost_hyper_Py_7.py", line 107, in trainModel
+    bst    = xgb.train(params,dtrain,num_boost_round=num_round,evals=[(dtrain,"train"),(dtest,"test")],evals_result=res,verbose_eval=False)
+  File "/home/ubuntu/xgboost/python-package/xgboost/training.py", line 219, in train
+    xgb_model=xgb_model, callbacks=callbacks)
+  File "/home/ubuntu/xgboost/python-package/xgboost/training.py", line 74, in _train_internal
+    bst.update(dtrain, i, obj)
+  File "/home/ubuntu/xgboost/python-package/xgboost/core.py", line 1182, in update
+    dtrain.handle))
+KeyboardInterrupt
