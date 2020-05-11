@@ -195,13 +195,14 @@ def main():
     labels = data_folder.y
     folds  = data_folder.folds
     labels = preprocess_data(labels)
+    result_folder = '../../../../result/simulated/'
 
     if args.run == 'hpo':
         run_nested_cv(inputs, labels, folds, seed=args.seed, dataset_name=args.dataset,
                       search_obj=HPO(), n_trials=100, distributions=['normal', 'logistic', 'extreme'],
                       sampler=RandomSampler(seed=args.seed),
-                      model_file_fmt='{dataset_name}/{distribution}-fold{test_fold_id}-model.json',
-                      trial_log_fmt='{dataset_name}/{distribution}-fold{test_fold_id}.json')
+                      model_file_fmt=result_folder+'{dataset_name}/{distribution}-fold{test_fold_id}-model.json',
+                      trial_log_fmt=result_folder+'{dataset_name}/{distribution}-fold{test_fold_id}.json')
     elif args.run == 'hpo-tpe':
         run_nested_cv(inputs, labels, folds, seed=args.seed, dataset_name=args.dataset,
                       search_obj=HPO(), n_trials=100, distributions=['normal', 'logistic', 'extreme'],
@@ -218,8 +219,8 @@ def main():
         run_nested_cv(inputs, labels, folds, seed=args.seed, dataset_name=args.dataset,
                       search_obj=Grid(), n_trials=100, distributions=['normal'],
                       sampler=GridSampler(search_space=grid),
-                      model_file_fmt='{dataset_name}/grid-{distribution}-fold{test_fold_id}-model.json',
-                      trial_log_fmt='{dataset_name}/grid-{distribution}-fold{test_fold_id}.json')
+                      model_file_fmt=result_folder+'{dataset_name}/grid-{distribution}-fold{test_fold_id}-model.json',
+                      trial_log_fmt=result_folder+'{dataset_name}/grid-{distribution}-fold{test_fold_id}.json')
     else:
         raise ValueError(f'Unknown run: {args.run}')
 
