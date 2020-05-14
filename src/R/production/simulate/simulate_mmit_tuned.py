@@ -15,9 +15,10 @@ from mmit_predictions        import Dataset
 from sklearn.model_selection import train_test_split
 from utils import *
 import json
-from sklearn.model_selection import KFold
 
 path_dir = '/Users/avinashbarnwal/Desktop/aftXgboostPaper/data/simulate/'
+
+#data  = ['simulated.linear','simulated.abs','simulated.sin']
 
 def get_range_max_min(X,y,nature='margin'):
     if nature=='margin':
@@ -32,7 +33,6 @@ def get_range_max_min(X,y,nature='margin'):
         range_max = X.shape[0]
     return range_min,range_max
 
-    
 def get_margin_range(range_min,range_max,n_margin_values=10):
     margin = [0.] + np.logspace(np.log10(range_min), np.log10(range_max), n_margin_values).tolist()
     return margin
@@ -41,19 +41,28 @@ def get_min_sample_split_sample(range_min,range_max,n_min_samples_split_values=1
     min_samples_split = np.logspace(np.log10(range_min), np.log10(range_max), n_min_samples_split_values).astype(np.uint).tolist()
     return min_samples_split
 
-def find_datasets(path_dir):
-    for d in listdir(path_dir):
-        if d in ['simulated.linear','simulated.abs','simulated.sin']:
-            if exists(join(path_dir, d, "features.csv")) and                     exists(join(path_dir, d, "targets.csv")) and                     exists(join(path_dir, d, "folds.csv")):
-                yield Dataset(abspath(join(path_dir, d)))
+def get_data(path_dir,folder_name):
+    return Dataset(abspath(join(path_dir, folder_name)))
 
-def get_train_test_split(X,y,test_size=0.5,random_state=1):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
-    return X_train,X_test,y_train,y_test
+def preprocess_data(labels):
+    labels = labels.copy()
+    labels[:,0] = list(map(lambda x: np.exp(x),labels[:,0]))
+    labels[:,1] = list(map(lambda x: np.exp(x),labels[:,1]))
+    return labels
+
+
+def get_train_valid_test_splits(folds, test_fold_id, inputs, labels, kfold_gen):
+
+    # Split data into train and test
+    X            = inputs[folds!= test_fold_id]
+    X_test       = inputs[folds == test_fold_id]
+    y_label      = labels[folds != test_fold_id]
+    y_label_test = labels[folds == test_fold_id]
+    return X,X_test,y_label,y_label_test
+
 
 
 def mmit_fit(X,y):
-
     range_min,range_max = get_range_max_min(X,y,nature='margin')
     margin = get_margin_range(range_min,range_max,n_margin_values=10)
     range_min,range_max = get_range_max_min(X,y,nature='min_sample_split')
@@ -82,7 +91,7 @@ for d in find_datasets(path_dir):
     accuracy[str(d.name)] = get_accuracy(pred,y_test[:,0],y_test[:,1])
 
 
-res_path = "/Users/avinashbarnwal/Desktop/aftXgboostPaper/result/simulated/accuracy_mmit_cv.json"
+res_path = "/Users/avinashbarnwal/Desktop/aftXgboostPaper/result/simulated/accuracy_mmit.json"
 
 with open(res_path, "w") as f:
     json.dump(accuracy,f)
