@@ -24,7 +24,6 @@ sr.predict = function(clf,X){
     return(pred)
 }
 
-
 main = function(X,y){
     X = set_X_type(X)
     y = set_y_type(y,y_type='log')
@@ -35,7 +34,7 @@ main = function(X,y){
     test_y   = data_split[['test_y']]
     clf      = sr.fit(train_X,train_y)
     pred     = sr.predict(clf,test_X)
-    accuracy = getaccuracy(pred,train_y[,"min.log.penalty"],train_y[,"max.log.penalty"])
+    accuracy = get.accuracy(pred,train_y)
     return(accuracy)
 }
 

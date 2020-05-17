@@ -21,8 +21,8 @@ set_y_type = function(y,y_type='antilog'){
     }
 }
 
-getaccuracy=function(pred,y_lower,y_higher){
-    res = (pred>=y_lower & pred<=y_higher)
+get.accuracy=function(pred,y){
+    res = (pred>=y[,"min.log.penalty"] & pred<=y[,"max.log.penalty"])
     accurcy = sum(res)/length(res) 
     return(accurcy)
 }

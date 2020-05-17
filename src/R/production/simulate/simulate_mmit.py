@@ -51,7 +51,6 @@ def get_train_test_split(X,y,test_size=0.5,random_state=1):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
     return X_train,X_test,y_train,y_test
 
-
 def mmit_fit(X,y):
 
     range_min,range_max = get_range_max_min(X,y,nature='margin')

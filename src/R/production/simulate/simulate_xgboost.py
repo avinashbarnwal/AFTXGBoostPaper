@@ -18,7 +18,7 @@ path_dir = '/Users/avinashbarnwal/Desktop/aftXgboostPaper/data/simulate/'
 def find_datasets(path_dir):
     for d in listdir(path_dir):
         if d in ['simulated.linear','simulated.abs','simulated.sin']:
-            if exists(join(path_dir, d, "features.csv")) and                     exists(join(path_dir, d, "targets.csv")) and                     exists(join(path_dir, d, "folds.csv")):
+            if exists(join(path_dir, d, "features.csv")) and exists(join(path_dir, d, "targets.csv")) and  exists(join(path_dir, d, "folds.csv")):
                 yield Dataset(abspath(join(path_dir, d)))
 
 

@@ -15,6 +15,8 @@ from mmit_predictions        import Dataset
 from sklearn.model_selection import train_test_split
 from utils import *
 import json
+import argparse
+from sklearn.model_selection import KFold
 
 path_dir = '/Users/avinashbarnwal/Desktop/aftXgboostPaper/data/simulate/'
 
@@ -44,73 +46,57 @@ def get_min_sample_split_sample(range_min,range_max,n_min_samples_split_values=1
 def get_data(path_dir,folder_name):
     return Dataset(abspath(join(path_dir, folder_name)))
 
-def preprocess_data(labels):
-    labels = labels.copy()
-    labels[:,0] = list(map(lambda x: np.exp(x),labels[:,0]))
-    labels[:,1] = list(map(lambda x: np.exp(x),labels[:,1]))
-    return labels
-
-
-def get_train_valid_test_splits(folds, test_fold_id, inputs, labels, kfold_gen):
-
-    # Split data into train and test
+def get_train_valid_test_splits(folds, test_fold_id, inputs, labels):
     X            = inputs[folds!= test_fold_id]
     X_test       = inputs[folds == test_fold_id]
-    y_label      = labels[folds != test_fold_id]
-    y_label_test = labels[folds == test_fold_id]
-    return X,X_test,y_label,y_label_test
+    y      = labels[folds != test_fold_id]
+    y_test = labels[folds == test_fold_id]
+    return X,X_test,y,y_test
 
-
-
-def mmit_fit(X,y):
+def run_nested_cv(inputs, labels, folds, seed):
+    fold_ids = np.unique(folds)
+    accuracy = {}
+    run_time = {}
+    for fold_id in fold_ids:
+        start = time.time() 
+        X,X_test,y,y_test  \
+              = get_train_valid_test_splits(folds, fold_id, inputs, labels)
+        cv = mmit_fit(X,y,seed)
+        y_pred = cv.predict(X_test)
+        accuracy[str(fold_id)] = get_accuracy(y_pred,y_test[:,0],y_test[:,1])
+        end        = time.time()
+        time_taken = end - start
+        run_time[str(fold_id)] = time_taken
+        print(f'Time elapsed = {time_taken}')
+    return accuracy,run_time
+        
+def mmit_fit(X,y,seed):
     range_min,range_max = get_range_max_min(X,y,nature='margin')
     margin = get_margin_range(range_min,range_max,n_margin_values=10)
     range_min,range_max = get_range_max_min(X,y,nature='min_sample_split')
     min_samples_split = get_min_sample_split_sample(range_min,range_max,n_min_samples_split_values=10)
-    cv_protocol = KFold(n_splits=5, shuffle=True, random_state=42)
+    cv_protocol = KFold(n_splits=5, shuffle=True, random_state=seed)
     param_grid = {"margin": margin, "loss":["linear_hinge"], "max_depth":[1,2,4,6], "min_samples_split":min_samples_split}
     estimator  = MaxMarginIntervalTree()
     cv         = GridSearchCV(estimator, param_grid, cv=cv_protocol, n_jobs=-1)
     cv.fit(X, y)
     return cv
 
-def mmit_predict(estimator,X):
-    pred = estimator.predict(X)
-    return pred
-
-accuracy = {}
-
-
-for d in find_datasets(path_dir):
-    X = d.X
-    y = d.y
-    y = set_y(y,y_type='log')
-    X_train,X_test,y_train,y_test = get_train_test_split(X,y,test_size=0.5,random_state=1)
-    estimator = mmit_fit(X_train,y_train)
-    pred = mmit_predict(estimator,X_test)
-    accuracy[str(d.name)] = get_accuracy(pred,y_test[:,0],y_test[:,1])
-
-
-res_path = "/Users/avinashbarnwal/Desktop/aftXgboostPaper/result/simulated/accuracy_mmit.json"
-
-with open(res_path, "w") as f:
-    json.dump(accuracy,f)
-
-
-# %%
-#file = open(str(i)+".tex", 'w')
-#file.write( _latex_export(estimator))
-#file.close()
-"""
-alphas, pruned_trees = min_cost_complexity_pruning(estimator)
-print alphas
-for pt in pruned_trees:
-    print sorted(pt.tree_.rules)
-	 
-param_grid =  {"margin": [0.0, 2.0], "loss":["linear_hinge"], "max_depth":[np.infty], "min_samples_split":[0]}
-search = GridSearchCV(estimator, param_grid)
-search.fit(x,y)
-print search.cv_results_
-"""
-
-
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset',required=True)
+    args = parser.parse_args()
+    data_folder =  get_data(path_dir,args.dataset)
+    inputs = data_folder.X
+    labels = data_folder.y
+    folds  = data_folder.folds
+    result_folder = '../../../../result/simulated/'+args.dataset+'/'
+    accuracy,run_time = run_nested_cv(inputs, labels, folds, 42)
+    acc_file = result_folder+"accuracy_mmit_cv.json"
+    run_file = result_folder+"run_mmit_cv.json"
+    with open(acc_file, "w") as f:
+        json.dump(accuracy,f)
+    with open(run_file, "w") as f:
+        json.dump(run_time,f)
+if __name__ == '__main__':
+    main()
