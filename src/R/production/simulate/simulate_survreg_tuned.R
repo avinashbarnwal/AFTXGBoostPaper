@@ -75,13 +75,6 @@ sr.cv = function(X,y){
     sr.net.fit = sr.fit(X.sub,y.trn)
 }
 
-def get_train_valid_test_splits(folds, fold_id, inputs, labels):
-    X            = inputs[folds!= test_fold_id]
-    X_test       = inputs[folds == test_fold_id]
-    y      = labels[folds != test_fold_id]
-    y_test = labels[folds == test_fold_id]
-    return X,X_test,y,y_test
-
 
 
 get.train.test<-function(folds,fold_id,inputs,labels){
@@ -117,9 +110,12 @@ main = function(X,y){
 
 accuracy_datasets = list()
 data_names      = list()
-data_names[[1]] = 'simulated.abs'
-data_names[[2]] = 'simulated.linear'
-data_names[[3]] = 'simulated.sin'
+# data_names[[1]] = 'simulated.abs'
+# data_names[[2]] = 'simulated.linear'
+# data_names[[3]] = 'simulated.sin'
+data_names[[1]] = 'simulated.model.1'
+data_names[[2]] = 'simulated.model.2'
+data_names[[3]] = 'simulated.model.3'
 
 for(dataset in data_names){
     result = get.data(dataset)

@@ -4,9 +4,13 @@ library(rjson)
 
 accuracy_datasets = list()
 data_names      = list()
-data_names[[1]] = 'simulated.abs'
-data_names[[2]] = 'simulated.linear'
-data_names[[3]] = 'simulated.sin'
+#data_names[[1]] = 'simulated.abs'
+#data_names[[2]] = 'simulated.linear'
+#data_names[[3]] = 'simulated.sin'
+data_names[[1]] = 'simulated.model.1'
+data_names[[2]] = 'simulated.model.2'
+data_names[[3]] = 'simulated.model.3'
+
 path            = '/Users/avinashbarnwal/Desktop/aftXgboostPaper/data/simulate/'
 
 get.accuracy=function(pred,y){
