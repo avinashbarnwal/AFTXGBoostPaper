@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import json
 import matplotlib.pyplot as plt
-%matplotlib inline
 from   matplotlib.ticker import StrMethodFormatter
 from   plotnine import *
 
@@ -10,9 +9,9 @@ from   plotnine import *
 ylim = [0, 1]
 result_folder   = '../../../../result/simulated/'
 df_scatter_plts = pd.DataFrame()
-for dataset_id, dataset in enumerate(['simulated.abs','simulated.sin','simulated.linear']):
+for dataset_id, dataset in enumerate(['simulated.abs','simulated.sin','simulated.linear','simulated.model.1','simulated.model.2','simulated.model.3']):
     # ax = axs[idx%3]
-    idx += 1
+    #idx += 1
     for dist_id, dist in enumerate(['normal', 'logistic', 'extreme']):
         for fold in [1, 2, 3, 4, 5]:
             with open(result_folder+f'{dataset}/{dist}-fold{fold}.json', 'r') as f:
@@ -60,5 +59,5 @@ for dataset_id, dataset in enumerate(['simulated.abs','simulated.sin','simulated
 
 fig_name = result_folder+'simulated_compare_models.png'
 p =  ggplot(df_scatter_plts, aes(x='Model',y='Parameter'))+ geom_point(stroke = 1,size=5,colour = "black", fill = "white")
-p = p+facet_grid('Objective~Data',scales="free") + theme(axis_text_x=element_text(rotation=90, hjust=1))
+p = p+facet_grid('Objective~Data',scales="free") + theme(axis_text_x=element_text(rotation=90, hjust=1))+theme(strip_text_x = element_text(size = 6))
 p.save(fig_name,dpi=150)
