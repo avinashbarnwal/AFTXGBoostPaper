@@ -62,26 +62,36 @@ def train(trial, train_valid_folds, dtest, distribution, search_obj):
     params = search_obj.get_params(trial)
     params['aft_loss_distribution'] = distribution
     params.update(search_obj.get_base_params())
+                                                                                                            
+    bst = []  # bst[i]: XGBoost model fit using i-th CV fold
+    best_iteration = 0
+    best_score = float('-inf')
+    max_round = 5000
+    # Validation metric needs to improve at least once in every early_stopping_rounds rounds to
+    # continue training.
+    early_stopping_rounds = 25
+    for dtrain, dvalid in train_valid_folds:
+        bst.append(xgb.Booster(params, [dtrain, dvalid]))
 
-    # Cross validation metric is computed as follows:
-    # 1. For each of the 5 folds, run XGBoost for 5000 rounds and record trace of the validation metric (accuracy)
-    # 2. Compute the mean validation metric over the 5 folds, for each iteration ID.
-    # 3. Select the iteration ID which maximizes the mean validation metric.
-    # 4. Return the mean validation metric as CV metric.
-    validation_metric_history = pd.DataFrame()
-    for fold_id, (dtrain, dvalid) in enumerate(train_valid_folds):
-        res = {}
-        bst = xgb.train(params, dtrain, num_boost_round=5000,
-                        evals=[(dtrain, 'train'), (dvalid, 'valid')],
-                        verbose_eval=False, evals_result=res)
-        validation_metric_history[fold_id] = res['valid']['interval-regression-accuracy']
-    validation_metric_history['mean'] = validation_metric_history.mean(axis=1)
-    best_num_round = validation_metric_history['mean'].idxmax()
+    # Use CV metric to decide to early stop. CV metric = mean validation accuracy over CV folds
+    for iteration_id in range(max_round):
+        valid_metric = []
+        for fold_id, (dtrain, dvalid) in enumerate(train_valid_folds):
+            bst[fold_id].update(dtrain, iteration_id)
+            msg = bst[fold_id].eval_set([(dvalid, 'valid')], iteration_id)
+            valid_metric.append(float([x.split(':') for x in msg.split()][1][1]))
+        cv_valid_metric = np.mean(valid_metric)
+        if cv_valid_metric > best_score:
+            best_score = cv_valid_metric
+            best_iteration = iteration_id
+        elif iteration_id - best_iteration >= early_stopping_rounds:
+            # Early stopping
+            break
 
-    trial.set_user_attr('num_round', best_num_round)
-    trial.set_user_attr('timestamp', time.time())
+    trial.set_user_attr('num_round', best_iteration)
+    trial.set_user_attr('timestamp', time.perf_counter())
 
-    return validation_metric_history.iloc[best_num_round].mean()
+    return best_score
 
 def run_nested_cv(inputs, labels, folds, seed, dataset_name, search_obj, n_trials, distributions, sampler, model_file_fmt, trial_log_fmt):
     fold_ids = np.unique(folds)
