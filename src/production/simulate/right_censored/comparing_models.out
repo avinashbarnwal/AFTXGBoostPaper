@@ -1,0 +1,24 @@
+[0]	test-aft-nloglik:1.20419
+[1000]	test-aft-nloglik:0.64719
+[2000]	test-aft-nloglik:0.67205
+[3000]	test-aft-nloglik:0.69005
+[4000]	test-aft-nloglik:0.71242
+[5000]	test-aft-nloglik:0.72847
+[6000]	test-aft-nloglik:0.74489
+[7000]	test-aft-nloglik:0.75775
+[8000]	test-aft-nloglik:0.77304
+[9000]	test-aft-nloglik:0.78676
+[9999]	test-aft-nloglik:0.80245
+0.4333459778491977
+[0]	test-cox-nloglik:6.40357
+[1000]	test-cox-nloglik:6.28042
+[2000]	test-cox-nloglik:6.27023
+[3000]	test-cox-nloglik:6.26790
+[4000]	test-cox-nloglik:6.26809
+[5000]	test-cox-nloglik:6.26826
+[6000]	test-cox-nloglik:6.26951
+[7000]	test-cox-nloglik:6.27088
+[8000]	test-cox-nloglik:6.27247
+[9000]	test-cox-nloglik:6.27396
+[9999]	test-cox-nloglik:6.27519
+0.6270624499695336
