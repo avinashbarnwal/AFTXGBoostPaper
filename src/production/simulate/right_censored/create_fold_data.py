@@ -67,6 +67,9 @@ def get_kfolds(X,y=None,y_lower=None,y_upper=None,model_type='aft',n_folds=5):
             input_data['data']['fold_data'].append(fold)
     return input_data
 
+# fp = open(b'../data/right_censored/aft/simulated_train_input_data.pkl',"rb")  
+# input_train_data = pickle.load(fp)  
+
 
 def main(model_type='aft'):
     if model_type=='aft':
