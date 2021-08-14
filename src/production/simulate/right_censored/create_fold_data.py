@@ -7,6 +7,7 @@ sys.path.insert(0,'../../../../utility')
 from model_utils import get_xgb_dataframe
 from sklearn.model_selection import KFold
 import json
+import pickle
 
 def get_train_test_split(df,test_frac=0.2):
     df_test=df.sample(frac=test_frac,random_state=200)
@@ -67,10 +68,6 @@ def get_kfolds(X,y=None,y_lower=None,y_upper=None,model_type='aft',n_folds=5):
     return input_data
 
 
-with open('../data/right_censored//aft/simulated_test_input_data.json','r') as fp:
-    test_data = json.loads(fp)
-
-
 def main(model_type='aft'):
     if model_type=='aft':
         df_X,df_y_lower,df_y_upper,df_y = get_X_y(model_type='aft')
@@ -80,19 +77,18 @@ def main(model_type='aft'):
         df['y'] = df_y
         df_train,df_test = get_train_test_split(df,test_frac=0.2)
         input_train_data = get_kfolds(X=df_train[['x1','x2','x3','x4']],y=df_train['y'],y_lower=df_train['y_lower'] ,y_upper=df_train['y_lower'],model_type='aft',n_folds=5)
-        input_test_data = df_test.to_json('../data/right_censored//aft/simulated_test_input_data.json',orient="columns")  
-        with open('../data/right_censored//aft/simulated_train_input_data.json','w') as fp:
-            json.dump(fp,input_train_data)
-        with open('../data/right_censored//aft/simulated_test_input_data.json','w') as fp:
-            json.dump(fp,input_test_data)
+        input_test_data = df_test.to_json('../data/right_censored/aft/simulated_test_input_data.json',orient="columns")  
+        fp = open(b'../data/right_censored/aft/simulated_train_input_data.pkl',"wb")
+        pickle.dump(input_train_data,fp)
     elif model_type=='coxPh':
         df_X,df_y = get_X_y(model_type='coxPh')
         df=df_X
         df['y'] = df_y
         df_train,df_test = get_train_test_split(df,test_frac=0.2)
-        input_data = get_kfolds(X=df_train[['x1','x2','x3','x4']],y=df_train['y'],model_type='coxPh',n_folds=5)
-        with open('../data/right_censored//cox_ph/simulated_input_data.json','w') as fp:
-            json.dump(fp,input_data)
+        input_train_data = get_kfolds(X=df_train[['x1','x2','x3','x4']],y=df_train['y'],model_type='coxPh',n_folds=5)
+        input_test_data = df_test.to_json('../data/right_censored/cox_ph/simulated_test_input_data.json',orient="columns")  
+        fp = open(b'../data/right_censored/cox_ph/simulated_train_input_data.pkl',"wb")
+        pickle.dump(input_train_data,fp)
 
 if __name__ == '__main__':
     main(model_type='aft')
