@@ -19,16 +19,12 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 fp = open(b'../data/right_censored/aft/simulated_train_input_data.pkl',"rb")
 input_data = pickle.load(fp)
 
+# loaded_study = optuna.load_study(study_name="survival", storage="sqlite:///normal.db")
 
 def main(distribution,input_data,n_trials):
     study = optuna.load_study(study_name='survival', storage=sqllite_filename)
     # study.optimize(objective, distribution,input_data,n_trials=n_trials)
     study.optimize(lambda trial: objective(trial,distribution, input_data), n_trials=n_trials)
-
-# trial = study.best_trial
-# with open(json_filename, "w") as write_file:
-#     json.dump(trial.params, write_file)
-
 
 for distribution in ['normal','logistic','extreme']:
     print(distribution)
