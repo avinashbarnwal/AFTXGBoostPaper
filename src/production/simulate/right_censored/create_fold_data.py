@@ -6,9 +6,11 @@ import sys
 sys.path.insert(0,'../../../../utility')
 from model_utils import get_xgb_dataframe
 from sklearn.model_selection import KFold
+import json
 
 def get_train_test_split(df,test_frac=0.2):
-    df_train, df_test = train_test_split(df,test_frac,random_state=42)
+    df_test=df.sample(frac=test_frac,random_state=200)
+    df_train=df.drop(df_test.index)
     df_train.reset_index(drop=True,inplace=True)
     df_test.reset_index(drop=True,inplace=True)
     return df_train,df_test
@@ -36,8 +38,8 @@ def get_kfolds(X,y=None,y_lower=None,y_upper=None,model_type='aft',n_folds=5):
     input_data['data']['fold_data']=[]
     if model_type=='aft':
         for fold_, (trn_idx, val_idx) in enumerate(Kfolds.split(X, y_lower,y_upper)):
-            tr_x,tr_y,tr_y_lower,tr_y_upper = X.iloc[trn_idx,:],y.iloc[trn_idx,:],y_lower.iloc[trn_idx],y_upper.iloc[trn_idx]
-            vl_x,vl_y,vl_y_lower,vl_y_upper = X.iloc[val_idx,:],y.iloc[val_idx,:], y_lower.iloc[val_idx],y_upper.iloc[val_idx]
+            tr_x,tr_y,tr_y_lower,tr_y_upper = X.iloc[trn_idx,:],y.iloc[trn_idx],y_lower.iloc[trn_idx],y_upper.iloc[trn_idx]
+            vl_x,vl_y,vl_y_lower,vl_y_upper = X.iloc[val_idx,:],y.iloc[val_idx], y_lower.iloc[val_idx],y_upper.iloc[val_idx]
             fold = {}
             fold['fold']=fold_
             fold['X_train']=tr_x
@@ -49,7 +51,7 @@ def get_kfolds(X,y=None,y_lower=None,y_upper=None,model_type='aft',n_folds=5):
             fold['y_upper_val']=vl_y_upper
             fold['y_val']=vl_y
             input_data['data']['fold_data'].append(fold)
-            print(input_data['data']['fold_data'])
+            print(len(input_data['data']['fold_data']))
     elif model_type=='coxph':
         for fold_, (trn_idx, val_idx) in enumerate(Kfolds.split(X, y)):
             tr_x, tr_y = X.iloc[trn_idx,:],y.iloc[trn_idx]
@@ -65,6 +67,10 @@ def get_kfolds(X,y=None,y_lower=None,y_upper=None,model_type='aft',n_folds=5):
     return input_data
 
 
+with open('../data/right_censored//aft/simulated_test_input_data.json','r') as fp:
+    test_data = json.loads(fp)
+
+
 def main(model_type='aft'):
     if model_type=='aft':
         df_X,df_y_lower,df_y_upper,df_y = get_X_y(model_type='aft')
@@ -73,20 +79,20 @@ def main(model_type='aft'):
         df['y_upper'] = df_y_upper
         df['y'] = df_y
         df_train,df_test = get_train_test_split(df,test_frac=0.2)
-        input_data = get_kfolds(X=df_train[['x1','x2','x3','x4']],y=df_train['y'],y_lower=df_train['y_lower'] ,y_upper=df_train['y_lower'],model_type='aft',n_folds=5)
-        y_test_pred=train_model(dtrain,dtest,model_type='aft')
-        c_index = c_statistic_harrell(list(y_test_pred), list(df_test['y']))
-        print(c_index)
+        input_train_data = get_kfolds(X=df_train[['x1','x2','x3','x4']],y=df_train['y'],y_lower=df_train['y_lower'] ,y_upper=df_train['y_lower'],model_type='aft',n_folds=5)
+        input_test_data = df_test.to_json('../data/right_censored//aft/simulated_test_input_data.json',orient="columns")  
+        with open('../data/right_censored//aft/simulated_train_input_data.json','w') as fp:
+            json.dump(fp,input_train_data)
+        with open('../data/right_censored//aft/simulated_test_input_data.json','w') as fp:
+            json.dump(fp,input_test_data)
     elif model_type=='coxPh':
         df_X,df_y = get_X_y(model_type='coxPh')
         df=df_X
         df['y'] = df_y
         df_train,df_test = get_train_test_split(df,test_frac=0.2)
-        dtrain,dtest = get_xgb_dataframe(df_train[['x1','x2','x3','x4']],y_train=df_train[['y']],X_test=df_test[['x1','x2','x3','x4']],y_test=df_test[['y']],
-        y_train_lower_bound=None,y_train_upper_bound=None,y_test_lower_bound=None,y_test_upper_bound=None,model_type='coxPh')
-        y_test_pred=train_model(dtrain,dtest,model_type='coxPh')
-        c_index = c_statistic_harrell(list(y_test_pred), list(df_test['y']))
-        print(c_index)
+        input_data = get_kfolds(X=df_train[['x1','x2','x3','x4']],y=df_train['y'],model_type='coxPh',n_folds=5)
+        with open('../data/right_censored//cox_ph/simulated_input_data.json','w') as fp:
+            json.dump(fp,input_data)
 
 if __name__ == '__main__':
     main(model_type='aft')
